@@ -2,67 +2,38 @@ import { useEffect, useState } from "react";
 import "./Main.css";
 
 const Main = () => {
-	const quotes = [
-		{
-			quote: "Be yourself; everyone else is already taken.",
-			author: "Oscar Wilde",
-		},
-		{
-			quote:
-				"Two things are infinite: the universe and human stupidity; and I'm not sure about the universe.",
-			author: "Albert Einstein",
-		},
-		{
-			quote: "The only thing I know is that I know nothing.",
-			author: "Socrates",
-		},
-		{
-			quote: "The only true wisdom is in knowing you know nothing.",
-			author: "Socrates",
-		},
-		{
-			quote: "Believe you can and you're halfway there.",
-			author: "Theodore Roosevelt",
-		},
-		{
-			quote:
-				"Success is not final, failure is not fatal: It is the courage to continue that counts.",
-			author: "Winston Churchill",
-		},
-		{
-			quote:
-				"The greatest glory in living lies not in never falling, but in rising every time we fall.",
-			author: "Nelson Mandela",
-		},
-		{
-			quote: "Strive not to be a success, but rather to be of value.",
-			author: "Albert Einstein",
-		},
-		{
-			quote:
-				"We are what we repeatedly do. Excellence, then, is not an act, but a habit.",
-			author: "Aristotle",
-		},
-		{ quote: "The best way out is always through.", author: "Robert Frost" },
-		{
-			quote: "Keep your eyes on the stars, and your feet on the ground.",
-			author: "Theodore Roosevelt",
-		},
-		{
-			quote: "Be the change that you wish to see in the world.",
-			author: "Mahatma Gandhi",
-		},
-		{
-			quote: "The only thing we have to fear is fear itself — and spiders.",
-			author: "Franklin D. Roosevelt",
-		},
-	];
-	const [quote, setQuote] = useState(
-		quotes[Math.floor(Math.random() * quotes.length)]
-	);
-	const getRandomQuote = () => {
-		setQuote(quotes[Math.floor(Math.random() * quotes.length)]);
+	const [quote, setQuote] = useState({ quote: "", author: "" });
+	const [isLoading, setIsLoading] = useState(false);
+	const [fade, setFade] = useState(false);
+
+	const getRandomColor = () =>
+		`#${Math.floor(Math.random() * 16777215).toString(16)}`;
+
+	const getRandomQuote = async () => {
+		setIsLoading(true);
+		setFade(false);
+		try {
+			const response = await fetch("http://api.quotable.io/random");
+			if (!response.ok) {
+				throw new Error("Failed to fetch quote");
+			}
+			const data = await response.json();
+			setQuote({ quote: data.content, author: data.author });
+		} catch (error) {
+			console.error("Error fetching quote:", error);
+			setQuote({
+				quote: "Be yourself; everyone else is already taken.",
+				author: "Oscar Wilde",
+			});
+		} finally {
+			setIsLoading(false);
+			setFade(true);
+		}
 	};
+
+	useEffect(() => {
+		getRandomQuote();
+	}, []);
 
 	useEffect(() => {
 		const tweetQuote = document.getElementById("tweet-quote");
@@ -71,8 +42,7 @@ const Main = () => {
 		)}`;
 		tweetQuote.setAttribute("href", tweetUrl);
 
-		const randomColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
-
+		const randomColor = getRandomColor();
 		document.body.style.backgroundColor = randomColor;
 		document.getElementById("new-quote").style.backgroundColor = randomColor;
 		document.getElementById("text").style.color = randomColor;
@@ -82,17 +52,38 @@ const Main = () => {
 	return (
 		<div>
 			<div id="quote-box">
-				<div id="text">
-					<i class="bi bi-quote" style={{ marginRight: "10px", fontSize: "28px" }}></i>
-					{quote.quote}
+				<div
+					id="text"
+					className={`quote-text ${fade ? "fade-in" : "fade-out"}`}
+				>
+					<i
+						className="bi bi-quote"
+						style={{ marginRight: "10px", fontSize: "28px" }}
+					></i>
+					{isLoading ? "Loading..." : quote.quote}
 				</div>
-				<div id="author">- {quote.author}</div>
+				<div
+					id="author"
+					className={`quote-author ${fade ? "fade-in" : "fade-out"}`}
+				>
+					- {isLoading ? "..." : quote.author}
+				</div>
 				<div id="buttons">
-					<a id="tweet-quote" target="_blank" href="twitter.com/intent/tweet">
+					<a
+						id="tweet-quote"
+						target="_blank"
+						href="https://twitter.com/intent/tweet"
+						rel="noopener noreferrer"
+					>
 						<i className="bi bi-twitter-x"></i>
 					</a>
-					<button type="button" onClick={() => getRandomQuote()} id="new-quote">
-						New Quote
+					<button
+						type="button"
+						onClick={getRandomQuote}
+						id="new-quote"
+						disabled={isLoading}
+					>
+						{isLoading ? "Fetching..." : "New Quote"}
 					</button>
 				</div>
 			</div>
