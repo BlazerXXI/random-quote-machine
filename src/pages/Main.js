@@ -49,6 +49,7 @@ const Main = () => {
 		document.getElementById("new-quote").style.backgroundColor = randomColor;
 		document.getElementById("text").style.color = randomColor;
 		document.getElementById("author").style.color = randomColor;
+		document.querySelector(".bi-twitter-x").style.color = randomColor;
 	}, [quote]);
 
 	return (
