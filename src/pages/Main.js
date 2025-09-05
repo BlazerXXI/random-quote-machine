@@ -13,12 +13,14 @@ const Main = () => {
 		setIsLoading(true);
 		setFade(false);
 		try {
-			const response = await fetch("https://api.quotable.io/random");
+			const response = await fetch("https://gist.githubusercontent.com/camperbot/5a022b72e96c4c9585c32bf6a75f62d9/raw/e3c6895ce42069f0ee7e991229064f167fe8ccdc/quotes.json");
 			if (!response.ok) {
 				throw new Error("Failed to fetch quote");
 			}
-			const data = await response.json();
-			setQuote({ quote: data.content, author: data.author });
+			const { quotes } = await response.json();
+			const randomIndex = Math.floor(Math.random() * quotes.length);
+			const data = quotes[randomIndex];
+			setQuote({ quote: data.quote, author: data.author });
 		} catch (error) {
 			console.error("Error fetching quote:", error);
 			setQuote({
